@@ -27,7 +27,7 @@ fn main(args: array<string>): int {
 4. Run the compiled file
 
 ## Compiling
-To compile a Wally file, you would use the `wallyc` compiler. The compiler is written in Rust and can be found [here](compiler).
+To compile a Wally file, you would use the `wallyc` compiler. The compiler is written in Rust and can be found [here][compiler].
 
 You can compile a Wally file by running the following command, and yes, you need to have the compiler installed for this to work (see the link above for more information on how to install the compiler):
 ```bash
@@ -35,13 +35,13 @@ wallyc <file> -o <output>
 ```
 
 ## Documentation
-The documentation for Wally can be found [here](docs).
+The documentation for Wally can be found [here][docs].
 
 ## Contributing
-If you would like to contribute to Wally, you can do so by creating a pull request on the [GitHub repository](lang-repo). If you would like to help with the documentation, you can do so by creating a pull request on the [GitHub repository](docs-repo).
+If you would like to contribute to Wally, you can do so by creating a pull request on the [GitHub repository][lang-repo]. If you would like to help with the documentation, you can do so by creating a pull request on the [GitHub repository][docs-repo].
 
 ## License
-Wally is licensed under the MIT license. You can find the license [here](licence).
+Wally is licensed under the MIT license. You can find the license [here][licence].
 
 [compiler]: https://www.github.com/wally-lang/wallyc
 [docs]: https://wally-lang.github.io/docs/
