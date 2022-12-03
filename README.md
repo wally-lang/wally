@@ -47,4 +47,4 @@ Wally is licensed under the MIT license. You can find the license [here][licence
 [docs]: https://wally-lang.github.io/docs/
 [lang-repo]: https://www.github.com/wally-lang/wally
 [docs-repo]: https://www.github.com/wally-lang/docs
-[licence]: https://www.github.com/wally-lang/wally/blob/master/LICENSE
+[licence]: https://www.github.com/wally-lang/wally/blob/main/LICENSE
