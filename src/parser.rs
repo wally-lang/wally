@@ -24,6 +24,7 @@ pub enum StatementKind {
     ConstantDeclaration(ConstantDeclaration),
     FunctionDeclaration(FunctionDeclaration),
     ClassDeclaration(ClassDeclaration),
+    ConstructorDeclaration(ConstructorDeclaration),
 
     Return(Return),
 }
@@ -98,6 +99,19 @@ pub struct Return {
 impl Return {
     pub fn new(expression: Expression) -> Self {
         Self { expression }
+    }
+}
+
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ConstructorDeclaration {
+    pub parameters: Vec<Parameter>,
+    pub body: Vec<Statement>,
+}
+
+impl ConstructorDeclaration {
+    pub fn new(parameters: Vec<Parameter>, body: Vec<Statement>) -> Self {
+        Self { parameters, body }
     }
 }
 
@@ -319,20 +333,19 @@ pub fn parse_statement(tokens: &Vec<Token>, index: &mut usize) -> Statement {
         TokenKind::ConstKw => {
             expectc(tokens, index, TokenKind::ConstKw);
             let statement = parse_var_statement(tokens, index);
-            let statement = Statement::new(StatementKind::ConstantDeclaration(ConstantDeclaration::new(Box::new(statement))), token.line, token.column);
-            statement
+            return Statement::new(StatementKind::ConstantDeclaration(ConstantDeclaration::new(Box::new(statement))), token.line, token.column);
         }
         TokenKind::FnKw => {
-            let statement = parse_function_statement(tokens, index);
-            statement
+            return parse_function_statement(tokens, index);
+        }
+        TokenKind::ConstructorKw => {
+            return parse_constructor_statement(tokens, index);
         }
         TokenKind::ClassKw => {
-            let statement = parse_class_statement(tokens, index);
-            statement
+            return parse_class_statement(tokens, index);
         }
         TokenKind::ReturnKw => {
-            let statement = parse_return_statement(tokens, index);
-            statement
+            return parse_return_statement(tokens, index);
         }
         _ => {
             let expression = parse_expression(tokens, index);
@@ -368,6 +381,31 @@ pub fn parse_function_statement(tokens: &Vec<Token>, index: &mut usize) -> State
     }
     expectc(tokens, index, TokenKind::RightBrace);
     Statement::new(StatementKind::FunctionDeclaration(FunctionDeclaration::new(name, parameters, return_type, body)), token.line, token.column)
+}
+pub fn parse_constructor_statement(tokens: &Vec<Token>, index: &mut usize) -> Statement {
+    let token = &tokens[*index];
+    expectc(tokens, index, TokenKind::ConstructorKw);
+    expectc(tokens, index, TokenKind::LeftParen);
+    let mut parameters = Vec::new();
+    while tokens[*index].kind != TokenKind::RightParen {
+        let name = tokens[*index].lexeme.clone();
+        *index += 1;
+        expectc(tokens, index, TokenKind::Colon);
+        let type_ = parse_type(tokens, index);
+        parameters.push(Parameter::new(name, type_));
+        if tokens[*index].kind == TokenKind::Comma {
+            expectc(tokens, index, TokenKind::Comma);
+        }
+    }
+    expectc(tokens, index, TokenKind::RightParen);
+    expectc(tokens, index, TokenKind::LeftBrace);
+    let mut body = Vec::new();
+    while tokens[*index].kind != TokenKind::RightBrace {
+        let statement = parse_statement(tokens, index);
+        body.push(statement);
+    }
+    expectc(tokens, index, TokenKind::RightBrace);
+    Statement::new(StatementKind::ConstructorDeclaration(ConstructorDeclaration::new(parameters, body)), token.line, token.column)
 }
 pub fn parse_class_statement(tokens: &Vec<Token>, index: &mut usize) -> Statement {
     let token = &tokens[*index];
@@ -533,6 +571,18 @@ pub fn parse_primary_expression(tokens: &Vec<Token>, index: &mut usize) -> Expre
             *index += 1;
             Expression::new(ExpressionKind::Literal(Literal::new(LiteralKind::Char(character), token.line, token.column)), token.line, token.column)
         }
+        TokenKind::TrueKw => {
+            *index += 1;
+            Expression::new(ExpressionKind::Literal(Literal::new(LiteralKind::Bool(true), token.line, token.column)), token.line, token.column)
+        }
+        TokenKind::FalseKw => {
+            *index += 1;
+            Expression::new(ExpressionKind::Literal(Literal::new(LiteralKind::Bool(false), token.line, token.column)), token.line, token.column)
+        }
+        TokenKind::NullKw => {
+            *index += 1;
+            Expression::new(ExpressionKind::Literal(Literal::new(LiteralKind::Null, token.line, token.column)), token.line, token.column)
+        }
         TokenKind::LeftParen => {
             *index += 1;
             let expression = parse_expression(tokens, index);
@@ -565,6 +615,10 @@ pub fn dump_statement(statement: &Statement, indent: usize) {
             println!("{}VariableDeclaration", indent_string);
             dump_variable_declaration(variable_declaration, indent + 1);
         }
+        StatementKind::ConstantDeclaration(constant_declaration) => {
+            println!("{}ConstantDeclaration", indent_string);
+            dump_constant_declaration(constant_declaration, indent + 1);
+        }
         StatementKind::FunctionDeclaration(function_declaration) => {
             println!("{}FunctionDeclaration", indent_string);
             dump_function_declaration(function_declaration, indent + 1);
@@ -576,6 +630,10 @@ pub fn dump_statement(statement: &Statement, indent: usize) {
         StatementKind::Return(return_statement) => {
             println!("{}Return", indent_string);
             dump_return(return_statement, indent + 1);
+        }
+        StatementKind::ConstructorDeclaration(constructor_declaration) => {
+            println!("{}ConstructorDeclaration", indent_string);
+            dump_constructor_declaration(constructor_declaration, indent + 1);
         }
         _ => {
             println!("{}Statement", indent_string);
@@ -650,6 +708,20 @@ pub fn dump_function_declaration(function_declaration: &FunctionDeclaration, ind
         dump_statement(statement, indent + 1);
     }
 }
+pub fn dump_constructor_declaration(constructor_declaration: &ConstructorDeclaration, indent: usize) {
+    let mut indent_string = String::new();
+    for _ in 0..indent {
+        indent_string.push_str("  ");
+    }
+    println!("{}Parameters:", indent_string);
+    for parameter in &constructor_declaration.parameters {
+        dump_parameter(parameter, indent + 1);
+    }
+    println!("{}Body:", indent_string);
+    for statement in &constructor_declaration.body {
+        dump_statement(statement, indent + 1);
+    }
+}
 pub fn dump_class_declaration(class_declaration: &ClassDeclaration, indent: usize) {
     let mut indent_string = String::new();
     for _ in 0..indent {
@@ -661,13 +733,19 @@ pub fn dump_class_declaration(class_declaration: &ClassDeclaration, indent: usiz
         dump_statement(b, indent + 1);
     }
 }
+pub fn dump_constant_declaration(constant_declaration: &ConstantDeclaration, indent: usize) {
+    let mut indent_string = String::new();
+    for _ in 0..indent {
+        indent_string.push_str("  ");
+    }
+    dump_statement(&constant_declaration.statement, indent);
+}
 pub fn dump_parameter(parameter: &Parameter, indent: usize) {
     let mut indent_string = String::new();
     for _ in 0..indent {
         indent_string.push_str("  ");
     }
-    println!("{}Identifier: {}", indent_string, parameter.name);
-    println!("{}Type: {:?}", indent_string, parameter.type_.kind);
+    println!("{}Identifier: {}, Type: {:?}", indent_string, parameter.name, parameter.type_.kind);
 }
 pub fn dump_return(return_statement: &Return, indent: usize) {
     let mut indent_string = String::new();

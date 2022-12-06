@@ -26,6 +26,7 @@ pub fn lex(source: &str) -> Vec<Token> {
         m.insert("fn", TokenKind::FnKw);
         m.insert("class", TokenKind::ClassKw);
         m.insert("return", TokenKind::ReturnKw);
+        m.insert("constructor", TokenKind::ConstructorKw);
         m
     };
 

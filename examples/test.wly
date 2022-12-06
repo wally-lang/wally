@@ -1,8 +1,13 @@
 class test {
-    fn test(a: string): int {
+    constructor(a: string) {
+        var a: string = a;
+    }
+
+    fn test(a: string, b: int): int {
         const var a: string = "Hello";
         var b: int = 69;
-        
+        var c: bool = true;
+
         return a;
     }
 }

@@ -30,6 +30,7 @@ pub enum TokenKind {
     FnKw,               // fn
     ClassKw,            // class
     ReturnKw,           // return
+    ConstructorKw,      // constructor
 
     // Operators
     Plus,               // +
