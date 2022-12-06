@@ -1,0 +1,8 @@
+class test {
+    fn test(a: string): int {
+        const var a: string = "Hello";
+        var b: int = 69;
+        
+        return a;
+    }
+}
