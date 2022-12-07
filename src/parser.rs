@@ -553,7 +553,14 @@ pub fn parse_primary_expression(tokens: &Vec<Token>, index: &mut usize) -> Expre
     match token.kind.clone() {
         TokenKind::Identifier(identifier) => {
             *index += 1;
-            Expression::new(ExpressionKind::Variable(Variable::new(identifier, token.line, token.column)), token.line, token.column)
+            if tokens[*index].kind == TokenKind::LeftParen {
+                *index += 1;
+                let expression = parse_call_expression(tokens, index);
+                expectc(tokens, index, TokenKind::RightParen);
+                expression
+            } else {
+                Expression::new(ExpressionKind::Variable(Variable::new(identifier, token.line, token.column)), token.line, token.column)
+            }
         }
         TokenKind::Integer(integer) => {
             *index += 1;
@@ -594,6 +601,32 @@ pub fn parse_primary_expression(tokens: &Vec<Token>, index: &mut usize) -> Expre
         }
     }
 }
+pub fn parse_call_expression(tokens: &Vec<Token>, index: &mut usize) -> Expression {
+    let token = &tokens[*index];
+    let expression = parse_primary_expression(tokens, index);
+    let name = match expression.kind.clone() {
+        ExpressionKind::Variable(variable) => variable.name,
+        _ => panic!("Expected variable, found {:?}", expression.kind),
+    };
+    if tokens[*index].kind == TokenKind::LeftParen {
+        *index += 1;
+        let mut arguments = Vec::new();
+        while tokens[*index].kind != TokenKind::RightParen {
+            arguments.push(parse_expression(tokens, index));
+            if tokens[*index].kind == TokenKind::Comma {
+                *index += 1;
+            }
+        }
+        *index += 1;
+        Expression::new(
+            ExpressionKind::Call(Box::new(Call::new(name, arguments))),
+            token.line,
+            token.column,
+        )
+    } else {
+        expression
+    }
+} 
 
 // --- Dumping AST ---
 pub fn dump_ast(ast: &Vec<Statement>) {

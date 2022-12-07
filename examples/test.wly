@@ -8,6 +8,8 @@ class test {
         var b: int = 69;
         var c: bool = true;
 
+        test_function();
+
         return a;
     }
 }

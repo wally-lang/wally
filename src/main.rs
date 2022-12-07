@@ -20,8 +20,9 @@ fn main() {
     let tokens = lex(&contents);
     let statements = parse(tokens);
 
-    dump_ast(&statements);    
+    println!("{:#?}", statements);
 
+    dump_ast(&statements);    
 
     let mut interpreter = Interpreter::new();
     interpreter.interpret(statements);
